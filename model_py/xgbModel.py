@@ -171,9 +171,35 @@ class XgbModel(object):
             'verbosity': verbosity,
             'eta': eta,
             'gamma': gamma,
-
-
+            'max_depth': max_depth,
+            'min_child_weight': min_child_weight,
+            'max_delta_step': max_delta_step,
+            'subsample': subsample,
+            'colsample_bytree': colsample_bytree,
+            'colsample_bylevel': colsample_bylevel,
+            'colsample_bynode': colsample_bynode,
+            'reg_lambda': reg_lambda,
+            'reg_alpha': reg_alpha,
+            'tree_method': tree_method,
+            'sketch_eps': sketch_eps,
+            'scale_pos_weight': scale_pos_weight,
+            'refresh_leaf': refresh_leaf,
+            'process_type': process_type,
+            'grow_policy': grow_policy,
+            'max_leaves': max_leaves,
+            'max_bin': max_bin,
+            'predictor': predictor,
+            'num_parallel_tree': num_parallel_tree,
+            'seed': seed,
+            'base_score': base_score
         }
+        bst = xgb.train(param, trainDM, num_round, evallist)
+
+        testProbPred = bst.predict(testDM)
+        testYPred = [1 if x >= threshold else 0 for x in testProbPred]
+        self.resultCheck(testY,testYPred, testProbPred)
+
+        bst.save_model(outputModelDir)
 
 
 
@@ -183,3 +209,85 @@ class XgbModel(object):
 
     def xgbPredict(self):
         print("xgbPredict")
+
+        dirName = ''
+        outputPredTable = ''
+        outputPredName = ''
+        inputModelDir = ''
+        features = ''
+        reserveFields = ''
+
+        for pair in self.parameters:
+            print("Modify pair", pair)
+            kv = pair.spilt(':')
+
+            if kv[0] == 'dirName':
+                dirName = kv[1]
+            elif kv[0] == 'outputPredTable':
+                outputPredTable = kv[1]
+            elif kv[0] == 'outputPredName':
+                outputPredName = kv[1]
+            elif kv[0] == 'inputModelDir':
+                inputModelDir = kv[1]
+            elif kv[0] == 'features':
+                features = kv[1]
+            elif kv[0] == 'reserveFields':
+                reserveFields = kv[1]
+            else:
+                print("No support parameter:", kv[0])
+
+        path = '/home/path' + dirName
+        print("load model--------------")
+        bst = xgb.Booster(model_file=inputModelDir)
+        files = os.listdir(path)
+        reserveCnt = len(reserveFields.spilt(','))
+        featureCnt = len(features.spilt(','))
+        totalCnt = reserveCnt + featureCnt
+        insertTimes = 0
+
+        for file in files:
+            print(f"dealing with file: {file}")
+            with open(os.path.join(path, file), 'rb') as f:
+                predDataTmp = orc.ORCFile(f).read().to_pandas()
+                print(predDataTmp.shape)
+                predX = predDataTmp.iloc[:, reserveCnt:totalCnt].values
+                print("begin -------------")
+                predDM = xgb.DMatrix(predX, missing=-999.0)
+                preds = bst.predict(predDM)
+                print("deal--------------")
+                fields = predDataTmp.iloc[:, 0: reserveCnt].astype('str').values
+
+                filedsNP = np.array(fields).T
+                predsNP = np.array(preds)
+
+                reserveFiledsConcatPreds = np.vstack((filedsNP, predsNP)).T.tolist()
+
+                fieldNamesStr = reserveFields + ',' + outputPredName
+                fieldNamesList = fieldNamesStr.spilt(',')
+
+                fieldsStructed = [StructField(fieldName, StringType(), True) for fieldName in fieldNamesList]
+                schema = StructType(fieldsStructed)
+
+                print("save---------------")
+                self.executor.saveDataSample(reserveFiledsConcatPreds, schema, outputPredTable, insertTimes)
+
+            insertTimes = insertTimes+1
+            nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%s')
+
+            print('\n')
+            print("now as ---------->", nowTime)
+            print('\n')
+
+    def resultCheck(self, labels, preds, probs):
+        print("check")
+
+
+
+
+
+
+
+
+
+
+
