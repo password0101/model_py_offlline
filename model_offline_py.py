@@ -37,4 +37,29 @@ if __name__ == "__main__":
     appName = 'modelOfflinePySpark' + '_' + appName
     spark = SparkSession.builder.appName(appName).enableHiveSupport().getOrCreate()
 
-    
+    from nosql.execHive import ExecHive
+
+    executor = ExecHive(spark)
+
+
+    try:
+        if service == 'xgbModel':
+            from model_py.xgbModel import XgbModel
+            print('')
+
+        else:
+            print('No support parameter:', service)
+
+    except Exception as ex:
+        print("==========>failed")
+
+        import traceback
+
+        errorStack = traceback.format_exc()
+
+        print(errorStack)
+
+    nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%s')
+    print('\n')
+    print("end as ---------->", nowTime)
+    print('\n')
