@@ -1,0 +1,49 @@
+------------训练
+
+export PYSPARK_PYTHON=/home/11102802/anaconda3/envs/tf_env/bin/python3
+
+spark2-submit \
+--master local[*] \
+--deploy-mode client \
+--queue root.exstat.cmodel \
+--executor-cores 4 \
+--driver-memory 64g \
+--conf spark.kryoserializer.buffer.max=512m \
+--conf spark.kryoserializer.buffer=256m \
+--conf spark.driver.maxResultSize=8g \
+--py-files /home/11102802/model_py_gyh/model_py_gyh/nosql/execHive.py,/home/11102802/model_py_gyh/model_py_gyh/model_py/xgbModel.py \
+/home/11102802/model_py_gyh/model_py_gyh/model_offline.py "model_py_gyh xgbModel xgbTrain \
+inputTrainTable:da_content_tmp.tmp_local_video_recommend_train \
+inputTestTable:da_content_tmp.tmp_local_video_recommend_test \
+label:is_click \
+max_depth:3 \
+num_round:30 \
+features:age,sex,model,region,com_province,com_city,city_grade,category,play_num,duration,\
+max_age,most_age,min_age,male_percent,female_percent,30_act_days,30_days_refresh_times,\
+30_days_starts_times,30_days_use_durations,30_days_search_num,7_act_days,7_days_refresh_times,\
+7_days_starts_times,7_days_use_durations,7_days_search_num,short_view_cnt,short_view_duration,\
+short_refresh_cnt,short_show_cnt,short_play_cnt,short_page_days,small_view_cnt,small_view_duration,\
+small_refresh_cnt,small_show_cnt,small_play_cnt,small_page_days,long_view_cnt,long_view_duration,\
+long_show_cnt,long_play_cnt,long_page_days,tuijian_channel_show_cnt,tuijian_active_days,\
+tuijian_show_cnt,tuijian_play_cnt,tuijian_play_time,tuijian_valid_play_ratio,\
+shehui_channel_show_cnt,shehui_active_days,shehui_show_cnt,shehui_play_cnt,shehui_play_time,\
+shehui_valid_play_ratio,youxi_channel_show_cnt,youxi_active_days,youxi_show_cnt,youxi_play_cnt,\
+youxi_play_time,youxi_valid_play_ratio,yingshi_channel_show_cnt,yingshi_active_days,\
+yingshi_show_cnt,yingshi_play_cnt,yingshi_play_time,yingshi_valid_play_ratio,\
+gaoxiao_channel_show_cnt,gaoxiao_active_days,gaoxiao_show_cnt,gaoxiao_play_cnt,gaoxiao_play_time,\
+gaoxiao_valid_play_ratio,qishinian_channel_show_cnt,qishinian_active_days,qishinian_show_cnt,\
+qishinian_play_cnt,qishinian_play_time,qishinian_valid_play_ratio,yinyue_channel_show_cnt,\
+yinyue_active_days,yinyue_show_cnt,yinyue_play_cnt,yinyue_play_time,yinyue_valid_play_ratio,\
+guangchangwu_channel_show_cnt,guangchangwu_active_days,guangchangwu_show_cnt,guangchangwu_play_cnt,\
+guangchangwu_play_time,guangchangwu_valid_play_ratio,yule_channel_show_cnt,yule_active_days,\
+yule_show_cnt,yule_play_cnt,yule_play_time,yule_valid_play_ratio,tiyu_channel_show_cnt,\
+tiyu_active_days,tiyu_show_cnt,tiyu_play_cnt,tiyu_play_time,tiyu_valid_play_ratio,\
+chongwu_channel_show_cnt,chongwu_active_days,chongwu_show_cnt,chongwu_play_cnt,chongwu_play_time,\
+chongwu_valid_play_ratio,short_active_days,short_use_number,short_duration,short_use_app_num,\
+small_active_days,small_use_number,small_duration,small_use_app_num,long_active_days,\
+long_use_number,long_duration,long_use_app_num,live_active_days,live_use_number,live_duration,\
+live_use_app_num,movie_active_days,movie_use_number,movie_duration,movie_use_app_num,\
+music_active_days,music_use_number,music_duration,music_use_app_num,news_active_days,\
+news_use_number,news_duration,news_use_app_num,game_active_days,game_use_number,game_duration,\
+game_use_app_num \
+outputModelDir:/home/11102802/model_py_gyh/model_save_path/test_xgboost.model"

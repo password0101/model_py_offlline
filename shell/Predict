@@ -1,0 +1,32 @@
+------------预测
+
+echo "$(date +"%F %T")| 新建结果表......"
+hive -hiveconf mapreduce.job.queuename=root.exstat.cmodel -e "
+drop table if exists da_content_tmp.tmp_temp_gyh_test_xgboost_predict_result;
+create table da_content_tmp.tmp_temp_gyh_test_xgboost_predict_result
+(
+	imei string,
+	video_id string,
+	score string,
+	etl_time string
+)
+"
+
+echo "$(date +"%F %T")| 从HDFS加载数据到本地......"
+cd /home/11102802/model_py_gyh/data
+rm tmp_local_video_recommend_video_target_imei_predict_04_a
+hadoop fs -get hdfs://bj04-region07/region07/22060/warehouse/da_content_tmp/tmp_local_video_recommend_video_target_imei_predict_04_a
+
+echo "$(date +"%F %T")| 开始预测......"
+export PYSPARK_PYTHON=/home/11102802/anaconda3/envs/tf_env/bin/python3
+
+spark2-submit \
+--master local[*] \
+--deploy-mode client \
+--queue root.exstat.cmodel \
+--executor-cores 4 \
+--driver-memory 32g \
+--conf spark.kryoserializer.buffer.max=512m \
+--conf spark.kryoserializer.buffer=256m \
+--conf spark.driver.maxResultSize=8g \
+--py-files /home/1110280
